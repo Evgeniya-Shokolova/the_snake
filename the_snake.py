@@ -35,9 +35,10 @@ clock = pygame.time.Clock()
 class GameObject:
     """Базовый класс для игры"""
 
-    def __init__(self, body_color, position=None):
+    def __init__(self, body_color=(255, 255, 255), position=None):
         if position is None:
-            self.position = position
+            position = (0, 0)
+        self.position = position
         self.body_color = body_color
 
     def draw(self, surface):
@@ -49,7 +50,7 @@ class Apple(GameObject):
     """Класс описания яблока"""
 
     def __init__(self):
-        super().__init__(APPLE_COLOR, (0, 0))
+        super().__init__(APPLE_COLOR)
         self.randomize_position()
 
     def randomize_position(self):
@@ -66,18 +67,18 @@ class Apple(GameObject):
 
 
 class Snake(GameObject):
-    """Класс описания яблока"""
+    """Класс описания змейки"""
 
     def __init__(self):
-        self.position = [(GRID_WIDTH // 2, GRID_HEIGHT // 2)]
+        super().__init__(SNAKE_COLOR)
+        self.positions = [(GRID_WIDTH // 2, GRID_HEIGHT // 2)]
         self.direction = RIGHT
         self.next_direction = None
         self.length = 1
-        self.body_color = SNAKE_COLOR
 
     def get_head_position(self):
         """возвращает позицию головы"""
-        return self.position[0]
+        return self.positions[0]
 
     def update_direction(self, new_direction):
         """направление движения змейки"""
@@ -97,13 +98,13 @@ class Snake(GameObject):
 
         new_head = (new_x, new_y)
 
-        if new_head in self.position:
+        if new_head in self.positions:
             raise ValueError
-        self.position = [new_head] + self.position[:-1]
+        self.positions = [new_head] + self.positions[:-1]
 
     def grow(self):
         """увеличивает длину змейки"""
-        self.position.append(self.position[-1])
+        self.positions.append(self.positions[-1])
 
     def reset(self):
         """сбрасывание в начальное состояние"""
@@ -111,7 +112,7 @@ class Snake(GameObject):
 
     def draw(self, surface):
         """Метод draw класса Snake"""
-        for pos in self.position:
+        for pos in self.positions:
             rect = pygame.Rect(pos[0] * GRID_SIZE,
                                pos[1] * GRID_SIZE, GRID_SIZE, GRID_SIZE)
             pygame.draw.rect(surface, self.body_color, rect)
@@ -135,30 +136,28 @@ def handle_keys(snake):
 
 
 def main():
-    """Экземпляры класса"""
+    """Главная функция для запуска игры 'Змейка'"""
     snake = Snake()
     apple = Apple()
 
-    while True:
+    running = True
+    while running:
         handle_keys(snake)
-
         try:
             snake.move()
         except ValueError:
-            snake.reset()
-
+            running = False
         if snake.get_head_position() == apple.position:
             snake.grow()
             apple.randomize_position()
-
-        screen.fill(BOARD_BACKGROUND_COLOR)
+            screen.fill(BOARD_BACKGROUND_COLOR)
         snake.draw(screen)
         apple.draw(screen)
-        # обновляет игровое поле на экране пользователя
         pygame.display.update()
-        clock.tick(10)             # скрость змейки
-        pygame.mixer
+        clock.tick(SPEED)
+    pygame.quit()
 
 
+# Убедимся, что функция main определена
 if __name__ == "__main__":
     main()
