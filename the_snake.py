@@ -2,6 +2,7 @@ from random import randint
 
 import pygame
 
+
 # Константы для размеров поля и сетки
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 GRID_SIZE = 20
@@ -34,9 +35,10 @@ clock = pygame.time.Clock()
 class GameObject:
     """Базовый класс для игры"""
 
-    def __init__(self, body_color, position):
+    def __init__(self, body_color, position=None):
+        if position is None:
+            self.position = position
         self.body_color = body_color
-        self.position = position
 
     def draw(self, surface):
         """Должен быть определен в подклассе"""
