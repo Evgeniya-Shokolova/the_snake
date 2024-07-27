@@ -167,7 +167,10 @@ def main():
     while True:
         handle_keys(snake)
         snake.update_direction()
-        snake.move()
+        try:
+            snake.move()
+        except ValueError:
+            snake.reset()
 
         if snake.get_head_position() == apple.position:
             snake.grow()
