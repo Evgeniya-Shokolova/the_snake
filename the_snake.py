@@ -26,12 +26,11 @@ SNAKE_COLOR = (0, 255, 0)
 WHITE = (255, 255, 255)
 
 # Скорость движения змейки
-SPEED = 10
+SPEED = 20
 
 # Инициализация Pygame
 pygame.init()
 
-# Настройка игрового окна
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Змейка')
 clock = pygame.time.Clock()
@@ -78,12 +77,10 @@ class Snake(GameObject):
         self.next_direction = None
 
     def reset(self):
-        """Сбрасывает состояние змейки к первоначальному."""
-        self.position = ((SCREEN_WIDTH // 2 // GRID_SIZE) * GRID_SIZE,
-                         (SCREEN_HEIGHT // 2 // GRID_SIZE) * GRID_SIZE)
+        """Сбрасывает змейку в начальное состояние."""
+        self.positions = [CENTER_POSITION]
         self.length = 1
-        self.positions = [self.position]
-        self.direction = RIGHT
+        self.direction = RIGHT  # Устанавливаем начальное направление
 
     def get_head_position(self):
         """Возвращает текущую позицию головы змейки."""
@@ -96,27 +93,29 @@ class Snake(GameObject):
             self.next_direction = None
 
     def move(self):
-        """Двигает змейку."""
+        """Двигает змейку, обновляя её позиции."""
         if self.next_direction:
             self.direction = self.next_direction
             self.next_direction = None
+        head_x, head_y = self.get_head_position()
+        new_x = head_x + self.direction[0] * GRID_SIZE
+        new_y = head_y + self.direction[1] * GRID_SIZE
+        # Проверка выхода за границы и телепортация
+        if new_x < 0:  # Выход слева
+            new_x = SCREEN_WIDTH - GRID_SIZE
+        elif new_x >= SCREEN_WIDTH:  # Выход справа
+            new_x = 0
+        if new_y < 0:  # Выход сверху
+            new_y = SCREEN_HEIGHT - GRID_SIZE
+        elif new_y >= SCREEN_HEIGHT:  # Выход снизу
+            new_y = 0
 
-        current_head = self.get_head_position()
-        new_head = (
-            (current_head[0] + self.direction[0] * GRID_SIZE) % SCREEN_WIDTH,
-            (current_head[1] + self.direction[1] * GRID_SIZE) % SCREEN_HEIGHT)
-
-        if new_head in self.positions:
-            raise ValueError('Змейка врезалась в саму себя!')
-
-        self.positions.insert(0, new_head)
+        new_head = (new_x, new_y)
+        self.positions.insert(0, new_head)  # Добавляем новую голову
 
         if len(self.positions) > self.length:
+            # Удаляем последний элемент, если длина не увеличивается
             self.positions.pop()
-
-    def grow(self):
-        """Увеличивает длину змейки."""
-        self.length += 1
 
     def draw(self, surface):
         """Метод отрисовки змейки."""
@@ -144,32 +143,36 @@ def handle_keys(game_object):
 
 
 def main():
-    """Главная функция для запуска игры 'Змейка'"""
+    """Основная функция, запускающая игру."""
     pygame.init()
     snake = Snake()
     apple = Apple()
 
+    # Настройка игрового окна
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    clock = pygame.time.Clock()
+
     while True:
         handle_keys(snake)
+        snake.update_direction()
+        snake.move()
 
-        try:
-            snake.move()
-
-        except ValueError:
-            snake.reset()  # Сброс змейки в случае столкновения
+        # Проверка, съела ли змейка яблоко
         if snake.get_head_position() == apple.position:
+            snake.length += 1  # Увеличиваем длину змейки
+            apple.randomize_position(snake.positions)  # Перемещаем яблоко
 
-            snake.grow()
+        # Проверка столкновения змейки с самой собой
+        if snake.get_head_position() in snake.positions[1:]:
+            snake.reset()  # Сбрасываем игру при столкновении
 
-            apple.randomize_position(snake.positions)
-        # Отрисовка
         screen.fill(BOARD_BACKGROUND_COLOR)
         snake.draw(screen)
         apple.draw(screen)
         pygame.display.update()
-        clock.tick(SPEED)
-    pygame.quit()
+
+        clock.tick(10)   # Устанавливаем скорость игры
 
 
 if __name__ == "__main__":
-    main()  # Запуск игры
+    main()
