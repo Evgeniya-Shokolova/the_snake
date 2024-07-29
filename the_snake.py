@@ -148,10 +148,6 @@ def main():
     snake = Snake()
     apple = Apple()
 
-    # Настройка игрового окна
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    clock = pygame.time.Clock()
-
     while True:
         handle_keys(snake)
         snake.update_direction()
