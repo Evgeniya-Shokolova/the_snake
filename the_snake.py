@@ -94,23 +94,13 @@ class Snake(GameObject):
 
     def move(self):
         """Двигает змейку, обновляя её позиции."""
-        if self.next_direction:
-            self.direction = self.next_direction
-            self.next_direction = None
-        head_x, head_y = self.get_head_position()
-        new_x = head_x + self.direction[0] * GRID_SIZE
-        new_y = head_y + self.direction[1] * GRID_SIZE
+        self.next_direction = None
+        current_head = self.get_head_position()
+        new_head = (
+            (current_head[0] + self.direction[0] * GRID_SIZE) % SCREEN_WIDTH,
+            (current_head[1] + self.direction[1] * GRID_SIZE) % SCREEN_HEIGHT)
         # Проверка выхода за границы и телепортация
-        if new_x < 0:  # Выход слева
-            new_x = SCREEN_WIDTH - GRID_SIZE
-        elif new_x >= SCREEN_WIDTH:  # Выход справа
-            new_x = 0
-        if new_y < 0:  # Выход сверху
-            new_y = SCREEN_HEIGHT - GRID_SIZE
-        elif new_y >= SCREEN_HEIGHT:  # Выход снизу
-            new_y = 0
 
-        new_head = (new_x, new_y)
         self.positions.insert(0, new_head)  # Добавляем новую голову
 
         if len(self.positions) > self.length:
